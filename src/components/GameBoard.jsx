@@ -1,140 +1,123 @@
-import React, { useState, useEffect } from 'react';
+import React, { Component } from 'react';
+import { AI, HUMAN, EMPTY, CURRENT, DISABLED } from './CONSTANTS.jsx';
 import styled from 'styled-components';
+import Cell from './Cell.jsx';
 
-import CellWrapper from './Cell';
+const getRandomFreeCell = arrBoard => {
+  const arrEmptyCells = arrBoard.reduce((acc, cur, i) => {
+    cur.cellState === EMPTY && acc.push(i);
+    return acc;
+  }, []);
 
-const GameBoard = props => {
-  const [currCell, setCurrCell] = useState();
-  const [settingsToArr, setSettings] = useState();
-  const [arrCells, setArrCell] = useState();
-  console.log(props, 'Props in GameBoard');
-  //const settingsToArr = Object.values(props.currentLevel);
-  console.log(settingsToArr, 'SettingsToArr');
-  const Human = [];
-  const AI = [];
+  if (arrEmptyCells.length) {
+    return Math.round(Math.random() * arrEmptyCells.length);
+  } else {
+    return null;
+  }
+};
 
-  // const arrCells =
-  //   ;
-
-  //console.log(arrCells);
-
-  const getRandomFreeCell = () => {
-    //(&& arrCells[0].cellState === null)
-    console.log(arrCells);
-    if (
-      !Object.keys(props.currentLevel).length === false &&
-      arrCells.cellState !== null
-      // loop dies when used all numbers
-    ) {
-      let num = Math.floor(Math.random() * settingsToArr[0] ** 2);
-      console.log(num, 'random Number');
-      if (arrCells[num].cellState == null) {
-        Human.push({ [num]: false });
-        AI.push({ [num]: false });
-        console.log(AI, Human, 'AI array and Human array');
-        arrCells[num].cellState = 'taken';
-        return num;
-      } else {
-        getRandomFreeCell();
-      }
-    } else {
-      return null;
-    }
-
-    // if (
-    //   !Object.keys(props.currentLevel).length === false &&
-    //   arrCells[0].cellState === null
-    // ) {
-    //   let num = -1;
-    //   while (arrCells[0].cellState !== null) {
-    //     num = Math.floor(Math.random() * settingsToArr[0] ** 2);
-    //   }
-    //   return console.log(num) || num;
-    // } else {
-    //   return console.log('else') || null;
-    // }
-  };
-
-  const lastTurn = whosTurn => {
-    arrCells[currCell].cellState = whosTurn;
-    console.log('lastturn');
-    setInterval(() => getRandomFreeCell(), 5000);
-  };
-  //const newCurrCell = setRandomFreeCell(arrCells);
-
-  const getBackgroundColorByCellState = state => {
-    // console.log(state);
-    if (state === null) {
-      return 'white';
-    } else if (state === 'AI') {
-      return 'red';
-    } else if (state === 'Human') {
-      return 'green';
-    } else if (state === 'current') {
-      return 'yellow';
-    }
-  };
-
-  const createInitArr = foo => {
-    return Array(foo ** 2)
+const createInitArr = size => {
+  if (size) {
+    return Array(size ** 2)
       .fill({})
       .map((el, i) => ({
         id: i,
         color: '#fff',
-        cellState: currCell === i ? 'current' : null
+        cellState: EMPTY
       }));
-  };
-
-  useEffect(() => {
-    settingsToArr && console.log(settingsToArr[0]);
-    settingsToArr && settingsToArr[0] && setArrCell(createInitArr(5));
-    settingsToArr && arrCells && setCurrCell(getRandomFreeCell());
-    console.log(arrCells);
-  }, [settingsToArr]);
-
-  useEffect(() => {
-    props.currentLevel && setSettings(Object.values(props.currentLevel));
-  }, [props.currentLevel]);
-
-  return (
-    <SquareWrapper>
-      {arrCells &&
-        arrCells.map((item, index) => {
-          return (
-            <CellWrapper
-              delay={currCell === index ? settingsToArr[1] : null}
-              lastTurn={currCell === index ? lastTurn : null}
-              cellState={item.cellState}
-              key={index}
-              background={getBackgroundColorByCellState(item.cellState)}
-            >
-              {index + 1}
-            </CellWrapper>
-          );
-        })}
-    </SquareWrapper>
-  );
+  } else {
+    return [];
+  }
 };
 
-const SquareWrapper = styled.div`
-  display: grid;
-  /* use styled components props to change border size and grid template, both ows and columns  */
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-  width: 3fr;
-  height: 3fr;
-  border: 3px solid black;
-  /* div {
-    font-size: 5px;
-    padding: 0.5em;
-    text-align: center;
-    border: 1px solid green;
-  } */
-`;
+class GameBoard extends Component {
+  state = {
+    curCell: null,
+    arrBoard: [],
+    currentLevelSettings: {},
+    isGameStartred: false
+  };
 
-// const CellWrapper = styled.div`
-// padding: 25px;
-//   font-size: 10px;
-//   border: 1px solid green;
-//   background: ${props => props.background};
-// `
+  changeCellStateTo = (n, newState) => {
+    const reducedArrBoard = { ...this.state.arrBoard[n], cellState: newState };
+    return this.setState({ arrBoard: reducedArrBoard });
+  };
+
+  //!! Казалось бы: почему не сделать так?
+  // ------------------------------------------------------
+  // componentDidMount = () => {
+  //   if(this.props.currentLevelSettings.field) {
+  //     const arrBoard = this.createInitArr(this.props.currentLevelSettings.field);
+  //     this.setState({arrBoard: arrBoard});
+  //   }
+  //   console.log(this.state.arrBoard)
+  // }
+  // ------------------------------------------------------
+  //!! А вот закаменти getDerivedStateFromProps , потом раскаменти componentDidMount и увидешь, что console.log(this.state.arrBoard) - не успевает!
+  //!! но если обработать props и забросить в стейт в getDerivedStateFromProps то потом в componentDidMount стейт уже будет виден
+  //!! потому что getDerivedStateFromProps отработает раньше
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    if (
+      nextProps.currentLevelSettings.field !==
+        prevState.currentLevelSettings.field ||
+      nextProps.currentLevelSettings.isGameStartred !==
+        prevState.currentLevelSettings.isGameStartred
+    ) {
+      const arrBoard = createInitArr(nextProps.currentLevelSettings.field);
+      const curCell = getRandomFreeCell(arrBoard);
+      arrBoard[curCell] = { ...arrBoard[curCell], cellState: CURRENT };
+      return {
+        arrBoard: arrBoard,
+        curCell: curCell,
+        currentLevelSettings: nextProps.currentLevelSettings,
+        isGameStartred: nextProps.isGameStartred
+      };
+    } else {
+      return null;
+    }
+  }
+
+  componentDidMount = () => {
+    this.setState({ currentLevelSettings: this.props.currentLevelSettings });
+    //!! опять-таки.... если ты попытаешься вывести здесь this.state.currentLevelSettings - ничего не увидешь, а в рендере стейт уже будет нормальный
+  };
+
+  render() {
+    const {
+      arrBoard,
+      curCell,
+      currentLevelSettings,
+      isGameStartred
+    } = this.state;
+
+    return (
+      <>
+        {arrBoard &&
+          curCell &&
+          arrBoard.map((el, i) => {
+            return (
+              <div key={i}>
+                {!isGameStartred ? (
+                  <Cell errMsg={this.props.errMsg} cellState={DISABLED}></Cell>
+                ) : (
+                  <Cell
+                    className={`cell-${el.cellState}`}
+                    {...(curCell === i
+                      ? { delay: currentLevelSettings.delay }
+                      : {})}
+                    cellTakedBy={this.changeCellStateTo}
+                    cellState={el.cellState}
+                  >
+                    {i + 1}
+                  </Cell>
+                )}
+              </div>
+            );
+          })}
+      </>
+    );
+  }
+}
+
 export default GameBoard;

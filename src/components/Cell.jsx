@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { AI, HUMAN, EMPTY, CURRENT, DISABLED, CELL_COLORS } from './CONSTANTS.jsx';
+import './Cell.scss';
+
+const getBackgroundColorByCellState = cellState => {
+  return CELL_COLORS[cellState];
+};
 
 const Cell = props => {
   const { delay = null } = props;
-  //console.log(props);
-  const [cellColor, setColor] = useState('#fff');
-  const [waiting, setWaiting] = useState(delay);
+  const [ waiting, setWaiting ] = useState(delay);
 
   useEffect(() => {
     delay &&
       setTimeout(() => {
         setWaiting(false);
-        props.lastTurn('AI');
+        //props.lastTurn('AI');
       }, delay);
   }, [props.delay]);
 
@@ -26,13 +30,9 @@ const Cell = props => {
 
   return (
     <>
-      <CellWrapper
-        {...(props.cellState === 'current' ? { onClick: handleClick } : {})}
-        background={cellColor}
-        {...(props.cellState === 'current'
-          ? { background: 'pink' }
-          : { background: 'yellow' })}
-        // background={cellColor}
+      <CellWrapper className={props.className}
+        { ...props.cellState === DISABLED ? {onClick: (e) => props.errMsg()} : {onClick: (e) => handleClick()}}
+        background={getBackgroundColorByCellState(props.cellState)}
       ></CellWrapper>
     </>
   );

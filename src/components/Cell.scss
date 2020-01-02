@@ -1,0 +1,14 @@
+.cell-CURRENT {
+  animation: blinker .3s cubic-bezier(.5, 0, 1, 1) infinite alternate;  
+}
+
+.cell-EMPTY {}
+
+.cell-DISABLED {
+}
+
+.cell-AI {}
+
+.cell-HUMAN {}
+
+@keyframes blinker { to { opacity: 0.5; } }

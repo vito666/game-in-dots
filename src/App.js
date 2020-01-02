@@ -1,6 +1,6 @@
 import React from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
-import GamePart from './components/GamePart';
+import StartScreen from './components/StartScreen';
 import LeaderBoardPart from './components/LeaderBoardPart';
 
 const GlobalStyle = createGlobalStyle`
@@ -22,7 +22,7 @@ function App() {
     <>
       <GlobalStyle />
       <Wrapper>
-        <GamePart />
+        <StartScreen />
         <LeaderBoardPart />
       </Wrapper>
     </>
