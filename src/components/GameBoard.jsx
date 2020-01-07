@@ -43,20 +43,6 @@ class GameBoard extends Component {
     return this.setState({ arrBoard: reducedArrBoard });
   };
 
-  //!! Казалось бы: почему не сделать так?
-  // ------------------------------------------------------
-  // componentDidMount = () => {
-  //   if(this.props.currentLevelSettings.field) {
-  //     const arrBoard = this.createInitArr(this.props.currentLevelSettings.field);
-  //     this.setState({arrBoard: arrBoard});
-  //   }
-  //   console.log(this.state.arrBoard)
-  // }
-  // ------------------------------------------------------
-  //!! А вот закаменти getDerivedStateFromProps , потом раскаменти componentDidMount и увидешь, что console.log(this.state.arrBoard) - не успевает!
-  //!! но если обработать props и забросить в стейт в getDerivedStateFromProps то потом в componentDidMount стейт уже будет виден
-  //!! потому что getDerivedStateFromProps отработает раньше
-
   static getDerivedStateFromProps(nextProps, prevState) {
     if (
       nextProps.currentLevelSettings.field !==
